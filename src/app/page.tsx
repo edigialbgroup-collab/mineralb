@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function Home() {
   const [product, setProduct] = useState("Calcare Premium / Limestone");
   const [unit, setUnit] = useState("m²");
   const [file, setFile] = useState<File | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -19,6 +21,10 @@ export default function Home() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
+    if (turnstileToken) {
+      formData.append("cf-turnstile-response", turnstileToken);
+    }
+
     try {
       const res = await fetch("/api/rfq", {
         method: "POST",
@@ -30,12 +36,13 @@ export default function Home() {
       if (res.ok) {
         setStatusMessage({
           type: "success",
-          text: `Richiesta inviata con successo! Codice riferimento: ${result.rfqId}`,
+          text: `Richiesta inviata con successo! Codice riferimento: ${result.rfqId || result.rfqCode}`,
         });
         form.reset();
         setProduct("Calcare Premium / Limestone");
         setUnit("m²");
         setFile(null);
+        setTurnstileToken("");
       } else {
         setStatusMessage({ type: "error", text: result.error || "Si è verificato un errore." });
       }
@@ -261,6 +268,14 @@ export default function Home() {
             <p className="text-[11px] text-[#8C7A6B] mt-2">
               Supportati: PDF, DWG, DXF, PNG, JPG (max 10MB). Documenti protetti e riservati.
             </p>
+          </div>
+
+          {/* Widget Cloudflare Turnstile */}
+          <div className="my-4 flex justify-center">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              onSuccess={(token: string) => setTurnstileToken(token)}
+            />
           </div>
 
           <button
