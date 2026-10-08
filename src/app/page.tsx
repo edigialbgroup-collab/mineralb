@@ -273,7 +273,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-[#E2DFD8] bg-[#EAE7E1] py-8 text-center text-xs text-[#6B6862]">
-        &copy; {new Date().getFullYear()} MineralB - Natural Stone & Mineral Sourcing Platform. Tutti i diritti riservati.
+        &copy; 2026 MineralB - Natural Stone & Mineral Sourcing Platform. Tutti i diritti riservati.
       </footer>
     </div>
   );
