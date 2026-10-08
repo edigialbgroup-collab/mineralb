@@ -99,7 +99,6 @@ export async function POST(request: Request) {
     const rfqCode = `RFQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // 2. Salvataggio record RFQ su Supabase
-    // NOTA: Se la colonna 'id' su Supabase è UUID/bigint, non passiamo 'id' direttamente ma usiamo rfqCode
     const insertPayload: Record<string, any> = {
       product: product,
       quantity: quantity,
@@ -112,10 +111,6 @@ export async function POST(request: Request) {
       attachment_url: attachmentPath,
       status: "New RFQ",
     };
-
-    // Proviamo a inserire il codice se la colonna id è di tipo text o se usiamo un campo rfq_code
-    // Se la tabella usa id TEXT, puoi decommentare la riga sotto:
-    // insertPayload.id = rfqCode;
 
     const { data: insertedData, error: dbError } = await supabase
       .from("rfqs")
