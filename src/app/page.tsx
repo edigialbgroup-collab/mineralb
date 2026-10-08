@@ -4,30 +4,25 @@ import { useState } from "react";
 import Link from "next/link";
 
 export default function Home() {
-  const [formData, setFormData] = useState({
-    product: "Calcare Premium / Limestone",
-    quantity: "",
-    unit: "m²",
-    company: "",
-    name: "",
-    email: "",
-    destinationCountry: "",
-    message: "",
-  });
+  const [product, setProduct] = useState("Calcare Premium / Limestone");
+  const [unit, setUnit] = useState("m²");
+  const [file, setFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setStatusMessage(null);
 
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
     try {
       const res = await fetch("/api/rfq", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       const result = await res.json();
@@ -37,16 +32,10 @@ export default function Home() {
           type: "success",
           text: `Richiesta inviata con successo! Codice riferimento: ${result.rfqId}`,
         });
-        setFormData({
-          product: "Calcare Premium / Limestone",
-          quantity: "",
-          unit: "m²",
-          company: "",
-          name: "",
-          email: "",
-          destinationCountry: "",
-          message: "",
-        });
+        form.reset();
+        setProduct("Calcare Premium / Limestone");
+        setUnit("m²");
+        setFile(null);
       } else {
         setStatusMessage({ type: "error", text: result.error || "Si è verificato un errore." });
       }
@@ -115,7 +104,7 @@ export default function Home() {
               </p>
               <a
                 href="#rfq"
-                onClick={() => setFormData((prev) => ({ ...prev, product: "Calcare Premium / Limestone" }))}
+                onClick={() => setProduct("Calcare Premium / Limestone")}
                 className="inline-block mt-4 text-sm font-semibold text-[#2B2D2F] underline"
               >
                 Richiedi quotazione per questo materiale &rarr;
@@ -133,7 +122,7 @@ export default function Home() {
               </p>
               <a
                 href="#rfq"
-                onClick={() => setFormData((prev) => ({ ...prev, product: "Pietra Naturale Strutturata" }))}
+                onClick={() => setProduct("Pietra Naturale Strutturata")}
                 className="inline-block mt-4 text-sm font-semibold text-[#2B2D2F] underline"
               >
                 Richiedi quotazione per questo materiale &rarr;
@@ -169,8 +158,9 @@ export default function Home() {
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Materiale *</label>
               <select
-                value={formData.product}
-                onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                name="product"
+                value={product}
+                onChange={(e) => setProduct(e.target.value)}
                 className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                 required
               >
@@ -183,15 +173,15 @@ export default function Home() {
               <div className="flex gap-2">
                 <input
                   type="number"
+                  name="quantity"
                   placeholder="Es. 500"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                   className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                   required
                 />
                 <select
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  name="unit"
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
                   className="border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                 >
                   <option value="m²">m²</option>
@@ -207,9 +197,8 @@ export default function Home() {
               <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Nome Completo *</label>
               <input
                 type="text"
+                name="name"
                 placeholder="Nome e Cognome"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                 required
               />
@@ -218,9 +207,8 @@ export default function Home() {
               <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Azienda *</label>
               <input
                 type="text"
+                name="company"
                 placeholder="Nome Azienda"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                 required
               />
@@ -229,9 +217,8 @@ export default function Home() {
               <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Email Aziendale *</label>
               <input
                 type="email"
+                name="email"
                 placeholder="nome@azienda.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
                 required
               />
@@ -242,9 +229,8 @@ export default function Home() {
             <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Paese / Città di Destinazione *</label>
             <input
               type="text"
+              name="destinationCountry"
               placeholder="Es. Germania (Monaco) / Italia (Milano)"
-              value={formData.destinationCountry}
-              onChange={(e) => setFormData({ ...formData, destinationCountry: e.target.value })}
               className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
               required
             />
@@ -253,12 +239,28 @@ export default function Home() {
           <div>
             <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Note / Specifiche Progetto</label>
             <textarea
+              name="message"
               rows={4}
               placeholder="Finitura superficiale, spessore dei blocchi/lastre, tempi di consegna..."
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
             ></textarea>
+          </div>
+
+          {/* Allegato File CAD / Scheda Tecnica */}
+          <div className="p-4 bg-[#F7F5F0] rounded-md border border-dashed border-[#DCD8D0]">
+            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">
+              Allegato Tecnico / Disegno CAD (Opzionale)
+            </label>
+            <input
+              type="file"
+              name="attachment"
+              accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="block w-full text-xs text-[#6B6862] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#2B2D2F] file:text-white hover:file:bg-[#3D3F42] cursor-pointer"
+            />
+            <p className="text-[11px] text-[#8C7A6B] mt-2">
+              Supportati: PDF, DWG, DXF, PNG, JPG (max 10MB). Documenti protetti e riservati.
+            </p>
           </div>
 
           <button
