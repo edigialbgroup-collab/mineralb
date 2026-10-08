@@ -100,6 +100,7 @@ export async function POST(request: Request) {
 
     // 2. Salvataggio record RFQ su Supabase
     const insertPayload: Record<string, any> = {
+      id: rfqCode,
       product: product,
       quantity: quantity,
       unit: unit,
@@ -132,9 +133,10 @@ export async function POST(request: Request) {
           ? `<p><strong>Allegato Tecnico:</strong> <a href="${signedUrl}">Download Disegno/PDF (Link Sicuro)</a></p>`
           : `<p><strong>Allegato Tecnico:</strong> Nessun allegato presente.</p>`;
 
+        // Email di notifica al team aziendale
         await resend.emails.send({
-          from: "MineralB Platform <onboarding@resend.dev>",
-          to: [process.env.NOTIFICATION_EMAIL || "commerciale@mineralb.com"],
+          from: "MineralB Platform <info@mineralb.com>",
+          to: [process.env.NOTIFICATION_EMAIL || "info@mineralb.com"],
           subject: `New RFQ - ${product} - ${company}`,
           html: `
             <h2>Nuova Richiesta di Quotazione (${rfqCode})</h2>
@@ -148,8 +150,9 @@ export async function POST(request: Request) {
           `,
         });
 
+        // Email di conferma automatica al cliente
         await resend.emails.send({
-          from: "MineralB Sourcing <onboarding@resend.dev>",
+          from: "MineralB Sourcing <info@mineralb.com>",
           to: [email],
           subject: "Your quotation request has been received - MineralB",
           html: `
