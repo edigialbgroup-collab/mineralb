@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@marsidev/react-turnstile": "^1.6.1",
     "@sanity/image-url": "^2.1.1",
     "@supabase/supabase-js": "^2.117.3",
     "next": "16.4.0",
