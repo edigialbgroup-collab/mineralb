@@ -239,7 +239,7 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Paese / Citta di Destinazione *</label>
+            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Paese / Città di Destinazione *</label>
             <input
               type="text"
               placeholder="Es. Germania (Monaco) / Italia (Milano)"
