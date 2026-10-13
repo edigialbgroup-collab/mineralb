@@ -6,6 +6,13 @@ export default defineType({
   type: 'object',
   fields: [
     defineField({
+      name: 'isVerified',
+      title: 'Dato Verificato e Certificato',
+      type: 'boolean',
+      description: 'Spunta solo se le specifiche provengono da test di laboratorio o certificazioni ufficiali.',
+      initialValue: true,
+    }),
+    defineField({
       name: 'bulkSpecificGravity',
       title: 'Bulk Specific Gravity (g/cm³)',
       type: 'number',
@@ -21,37 +28,31 @@ export default defineType({
       name: 'compressiveStrengthDry',
       title: 'Compressive Strength - Dry (MPa)',
       type: 'number',
-      description: 'Rezistenca në shtypje - dry (es. 153.11)',
     }),
     defineField({
       name: 'compressiveStrengthWet',
       title: 'Compressive Strength - Wet (MPa)',
       type: 'number',
-      description: 'Rezistenca në shtypje - wet (es. 130.18)',
     }),
     defineField({
       name: 'modulusOfRuptureDry',
       title: 'Modulus of Rupture - Dry (MPa)',
       type: 'number',
-      description: 'Moduli i thyerjes në përkulje - dry (es. 12.31)',
     }),
     defineField({
       name: 'modulusOfRuptureWet',
       title: 'Modulus of Rupture - Wet (MPa)',
       type: 'number',
-      description: 'Moduli i thyerjes në përkulje - wet (es. 11.92)',
     }),
     defineField({
       name: 'flexuralStrengthDry',
       title: 'Flexural Strength - Dry (MPa)',
       type: 'number',
-      description: 'Rezistenca në përkulje - dry (es. 8.17)',
     }),
     defineField({
       name: 'flexuralStrengthWet',
       title: 'Flexural Strength - Wet (MPa)',
       type: 'number',
-      description: 'Rezistenca në përkulje - wet (es. 7.88)',
     }),
     defineField({
       name: 'testingStandards',
@@ -63,7 +64,6 @@ export default defineType({
       name: 'labCertification',
       title: 'Laboratory Certification',
       type: 'string',
-      initialValue: 'ALTEA & GEOSTUDIO 2000 (ISO/IEC 17025)',
     }),
   ],
 });

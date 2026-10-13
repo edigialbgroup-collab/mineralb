@@ -1,292 +1,296 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Turnstile } from "@marsidev/react-turnstile";
+import Image from "next/image";
+import { client } from "@/sanity/schemaTypes/client";
+import RfqForm from "@/components/RfqForm";
 
-export default function Home() {
-  const [product, setProduct] = useState("Calcare Premium / Limestone");
-  const [unit, setUnit] = useState("m²");
-  const [file, setFile] = useState<File | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
+interface Material {
+  _id: string;
+  title: string;
+  slug?: { current: string };
+  origin?: string;
+  shortDescription?: string;
+  galleryUrls?: string[];
+}
 
-  const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+interface ProcessStep {
+  stepNumber?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  linkUrl?: string; // Nuovo campo
+}
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setStatusMessage(null);
+interface SiteSettings {
+  heroImageUrl?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  processSteps?: ProcessStep[];
+}
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+const DEFAULT_STEPS: ProcessStep[] = [
+  {
+    stepNumber: "01. SOURCING",
+    title: "Selezione alla Cava",
+    description: "Identificazione diretta dei blocchi e delle bancate di materiale con resa estetica e strutturale superiore.",
+  },
+  {
+    stepNumber: "02. VERIFICA",
+    title: "Test di Laboratorio",
+    description: "Analisi meccaniche e fisiche certificate ASTM/EN su densità, assorbimento e resistenza alla compressione.",
+  },
+  {
+    stepNumber: "03. QUOTAZIONE",
+    title: "Offerta Dedicata",
+    description: "Elaborazione di quotazioni B2B trasparenti calibrate su quantità, specifiche di taglio e destinazione.",
+  },
+  {
+    stepNumber: "04. FORNITURA",
+    title: "Logistica e Spedizione",
+    description: "Coordinamento delle spedizioni internazionali per blocchi grezzi, lastre o progetti cut-to-size.",
+  },
+];
 
-    if (turnstileToken) {
-      formData.append("cf-turnstile-response", turnstileToken);
-    }
-
-    try {
-      const res = await fetch("/api/rfq", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        setStatusMessage({
-          type: "success",
-          text: `Richiesta inviata con successo! Codice riferimento: ${result.rfqId || result.rfqCode}`,
-        });
-        form.reset();
-        setProduct("Calcare Premium / Limestone");
-        setUnit("m²");
-        setFile(null);
-        setTurnstileToken("");
-      } else {
-        setStatusMessage({ type: "error", text: result.error || "Si è verificato un errore." });
+async function getHomePageData(): Promise<{ materials: Material[]; settings: SiteSettings | null }> {
+  const query = `{
+    "materials": *[_type == "material"] | order(publishedAt desc) {
+      _id,
+      title,
+      slug,
+      origin,
+      shortDescription,
+      "galleryUrls": gallery[].asset->url
+    },
+    "settings": *[_type == "siteSettings"][0] {
+      "heroImageUrl": heroImage.asset->url,
+      heroTitle,
+      heroSubtitle,
+      processSteps[] {
+        stepNumber,
+        title,
+        description,
+        "imageUrl": image.asset->url,
+        linkUrl
       }
-    } catch (err) {
-      setStatusMessage({ type: "error", text: "Errore di connessione. Riprova più tardi." });
-    } finally {
-      setLoading(false);
     }
-  };
+  }`;
+
+  try {
+    const data = await client.fetch(query);
+    return {
+      materials: data?.materials || [],
+      settings: data?.settings || null,
+    };
+  } catch (error) {
+    console.error("Errore recupero dati Home Page:", error);
+    return { materials: [], settings: null };
+  }
+}
+
+export default async function Home() {
+  const { materials, settings } = await getHomePageData();
+
+  const heroImageSrc = settings?.heroImageUrl;
+  const heroTitle = settings?.heroTitle || "Pietre Naturali,\nDirettamente dalla Fonte.";
+  const heroSubtitle = settings?.heroSubtitle || "Connettiamo cave verificate con acquirenti B2B e distributori internazionali. Trasparenza tecnica, certificazioni e supporto alla fornitura.";
+
+  const processSteps = DEFAULT_STEPS.map((defaultStep, idx) => {
+    const sanityStep = settings?.processSteps?.[idx];
+    return {
+      stepNumber: sanityStep?.stepNumber || defaultStep.stepNumber,
+      title: sanityStep?.title || defaultStep.title,
+      description: sanityStep?.description || defaultStep.description,
+      imageUrl: sanityStep?.imageUrl,
+      linkUrl: sanityStep?.linkUrl, // Recupero Link
+    };
+  });
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#1A1A1A] font-sans">
-      {/* Header */}
-      <header className="border-b border-[#E2DFD8] bg-[#F7F5F0]/90 backdrop-blur sticky top-0 z-50">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#1A1A1A] font-sans selection:bg-[#8C7A6B] selection:text-white">
+         {/* Header - Menu Aggiornato Home Page (Testo Chiaro su Sfondo Scuro) */}
+      <header className="fixed w-full border-b border-white/10 bg-[#141516]/90 backdrop-blur-md z-50 transition-all">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold tracking-tight text-[#2B2D2F]">
-            MINERAL<span className="text-[#8C7A6B]">B</span>
-          </div>
-          <nav className="flex space-x-8 text-sm font-medium text-[#4A4A4A]">
-            <Link href="#materials" className="hover:text-[#1A1A1A]">Materiali</Link>
-            <Link href="#about" className="hover:text-[#1A1A1A]">Chi Siamo</Link>
-            <Link href="#rfq" className="hover:text-[#1A1A1A]">Richiedi Quotazione</Link>
+          <Link href="/" className="text-2xl font-bold tracking-tight text-white">
+            MINERAL<span className="text-[#C5A880]">B</span>
+          </Link>
+          <nav className="hidden md:flex space-x-8 text-xs font-semibold uppercase tracking-wider text-[#A3A09A]">
+            <Link href="/about" className="hover:text-white transition">Chi Siamo</Link>
+            <Link href="/#process" className="hover:text-white transition">Il Metodo</Link>
+            <Link href="/#materials" className="hover:text-white transition">Materiali</Link>
+            <Link href="/request-a-quote" className="hover:text-white transition text-white border-b border-[#C5A880] pb-1">Richiedi Quotazione</Link>
           </nav>
         </div>
       </header>
 
+
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-24 text-center">
-        <h1 className="text-4xl md:text-6xl font-light tracking-tight text-[#2B2D2F] max-w-4xl mx-auto leading-tight">
-          Pietre Naturali, Direttamente dalla Fonte.
-        </h1>
-        <p className="mt-6 text-lg md:text-xl text-[#6B6862] max-w-2xl mx-auto">
-          Connettiamo cave verificate con acquirenti internazionali e distributori in tutta Europa.
-        </p>
-        <div className="mt-10 flex justify-center gap-4">
-          <a
-            href="#rfq"
-            className="bg-[#2B2D2F] text-white px-8 py-3 rounded-md text-sm font-medium hover:bg-[#3D3F42] transition"
-          >
-            Richiedi Quotazione (RFQ)
-          </a>
-          <a
-            href="#materials"
-            className="border border-[#2B2D2F] text-[#2B2D2F] px-8 py-3 rounded-md text-sm font-medium hover:bg-[#EAE7E1] transition"
-          >
-            Esplora Catalogo
-          </a>
-        </div>
-      </section>
-
-      {/* Materials Section */}
-      <section id="materials" className="bg-[#EAE7E1] py-20 border-t border-b border-[#DCD8D0]">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-2xl font-light text-[#2B2D2F] mb-2">Catalogo Selezionato</h2>
-          <p className="text-[#6B6862] text-sm mb-10">Materiali naturali verificati di alta qualità</p>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-[#F7F5F0] p-6 rounded-lg border border-[#DCD8D0] shadow-sm">
-              <div className="h-48 bg-[#D3CEC5] rounded-md mb-4 flex items-center justify-center text-[#6B6862]">
-                [Foto Materiale 1]
-              </div>
-              <h3 className="text-xl font-medium text-[#2B2D2F]">Calcare Premium / Limestone</h3>
-              <p className="text-sm text-[#8C7A6B] mt-1">Origine: Cava Verificata</p>
-              <p className="text-sm text-[#6B6862] mt-3">
-                Materiale lapideo ideale per grandi rivestimenti, edilizia commerciale e pavimentazioni esterne.
-              </p>
-              <a
-                href="#rfq"
-                onClick={() => setProduct("Calcare Premium / Limestone")}
-                className="inline-block mt-4 text-sm font-semibold text-[#2B2D2F] underline"
-              >
-                Richiedi quotazione per questo materiale &rarr;
-              </a>
-            </div>
-
-            <div className="bg-[#F7F5F0] p-6 rounded-lg border border-[#DCD8D0] shadow-sm">
-              <div className="h-48 bg-[#C8C2B7] rounded-md mb-4 flex items-center justify-center text-[#6B6862]">
-                [Foto Materiale 2]
-              </div>
-              <h3 className="text-xl font-medium text-[#2B2D2F]">Pietra Naturale Strutturata</h3>
-              <p className="text-sm text-[#8C7A6B] mt-1">Origine: Cava Verificata</p>
-              <p className="text-sm text-[#6B6862] mt-3">
-                Lavorazione ad alta precisione per progetti architettonici e forniture industriali B2B.
-              </p>
-              <a
-                href="#rfq"
-                onClick={() => setProduct("Pietra Naturale Strutturata")}
-                className="inline-block mt-4 text-sm font-semibold text-[#2B2D2F] underline"
-              >
-                Richiedi quotazione per questo materiale &rarr;
-              </a>
-            </div>
+      <section className="relative pt-36 pb-28 md:pt-48 md:pb-36 px-6 bg-[#141516] text-white overflow-hidden min-h-[85vh] flex items-center justify-center">
+        {heroImageSrc ? (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={heroImageSrc}
+              alt="Pietra naturale MineralB"
+              fill
+              priority
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
           </div>
-        </div>
-      </section>
-
-      {/* RFQ Form Section */}
-      <section id="rfq" className="max-w-4xl mx-auto px-6 py-20">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-light text-[#2B2D2F]">Richiesta di Quotazione B2B (RFQ)</h2>
-          <p className="text-sm text-[#6B6862] mt-2">
-            Compila il modulo per ricevere un'offerta commerciale personalizzata per il tuo progetto.
-          </p>
-        </div>
-
-        {statusMessage && (
-          <div
-            className={`p-4 mb-6 rounded-md text-sm ${
-              statusMessage.type === "success"
-                ? "bg-green-100 text-green-800 border border-green-200"
-                : "bg-red-100 text-red-800 border border-red-200"
-            }`}
-          >
-            {statusMessage.text}
-          </div>
+        ) : (
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#111213] to-[#1C1E20]"></div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg border border-[#E2DFD8] shadow-sm space-y-6">
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Materiale *</label>
-              <select
-                name="product"
-                value={product}
-                onChange={(e) => setProduct(e.target.value)}
-                className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                required
-              >
-                <option value="Calcare Premium / Limestone">Calcare Premium / Limestone</option>
-                <option value="Pietra Naturale Strutturata">Pietra Naturale Strutturata</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Quantità *</label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  name="quantity"
-                  placeholder="Es. 500"
-                  className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                  required
-                />
-                <select
-                  name="unit"
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                >
-                  <option value="m²">m²</option>
-                  <option value="m³">m³</option>
-                  <option value="tonnes">ton</option>
-                </select>
-              </div>
-            </div>
-          </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10 drop-shadow-sm">
+          <span className="inline-block px-3.5 py-1 bg-black/50 border border-[#C5A880]/50 rounded-full text-[11px] font-semibold text-[#C5A880] uppercase tracking-[0.2em] mb-6 backdrop-blur">
+            B2B Natural Stone Sourcing
+          </span>
+          
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-white leading-[1.15] mb-6 whitespace-pre-line">
+            {heroTitle}
+          </h1>
+          
+          <p className="text-base md:text-xl text-[#E2DFD8] max-w-2xl mx-auto font-light leading-relaxed mb-10">
+            {heroSubtitle}
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Nome Completo *</label>
-              <input
-                type="text"
-                name="name"
-                placeholder="Nome e Cognome"
-                className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Azienda *</label>
-              <input
-                type="text"
-                name="company"
-                placeholder="Nome Azienda"
-                className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Email Aziendale *</label>
-              <input
-                type="email"
-                name="email"
-                placeholder="nome@azienda.com"
-                className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-                required
-              />
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+            <a
+              href="#materials"
+              className="w-full sm:w-auto bg-[#C5A880] text-[#141516] px-8 py-3.5 rounded text-xs font-semibold uppercase tracking-wider hover:bg-[#d6ba93] transition shadow-lg"
+            >
+              Esplora Catalogo
+            </a>
+            <Link
+              href="/request-a-quote" // ANCHE QUI AGGIORNATO
+              className="w-full sm:w-auto border border-white/40 bg-black/30 text-white px-8 py-3.5 rounded text-xs font-semibold uppercase tracking-wider hover:bg-white/20 transition backdrop-blur"
+            >
+              Richiedi Quotazione
+            </Link>
           </div>
+        </div>
+      </section>
 
-          <div>
-            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Paese / Città di Destinazione *</label>
-            <input
-              type="text"
-              name="destinationCountry"
-              placeholder="Es. Germania (Monaco) / Italia (Milano)"
-              className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">Note / Specifiche Progetto</label>
-            <textarea
-              name="message"
-              rows={4}
-              placeholder="Finitura superficiale, spessore dei blocchi/lastre, tempi di consegna..."
-              className="w-full border border-[#DCD8D0] p-3 rounded-md text-sm bg-[#F7F5F0]"
-            ></textarea>
-          </div>
-
-          {/* Allegato File CAD / Scheda Tecnica */}
-          <div className="p-4 bg-[#F7F5F0] rounded-md border border-dashed border-[#DCD8D0]">
-            <label className="block text-xs font-semibold text-[#4A4A4A] uppercase mb-2">
-              Allegato Tecnico / Disegno CAD (Opzionale)
-            </label>
-            <input
-              type="file"
-              name="attachment"
-              accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg,.webp,.doc,.docx"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="block w-full text-xs text-[#6B6862] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#2B2D2F] file:text-white hover:file:bg-[#3D3F42] cursor-pointer"
-            />
-            <p className="text-[11px] text-[#8C7A6B] mt-2">
-              Supportati: PDF, DWG, DXF, PNG, JPG (max 10MB). Documenti protetti e riservati.
+      {/* Il Metodo - Ora Dinamicamente Cliccabile */}
+      <section id="process" className="py-20 bg-white border-b border-[#E2DFD8]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <h2 className="text-2xl md:text-3xl font-light text-[#2B2D2F]">Trasparenza dalla Cava al Cantiere</h2>
+            <p className="text-[#6B6862] text-xs uppercase tracking-wider mt-2">
+              Il nostro processo di selezione e fornitura B2B
             </p>
           </div>
 
-          {/* Widget Cloudflare Turnstile */}
-          <div className="my-4 flex justify-center">
-            <Turnstile
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-              onSuccess={(token: string) => setTurnstileToken(token)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {processSteps.map((step, idx) => {
+              // Contenuto interno della card
+              const CardContent = (
+                <div className={`h-full bg-[#F7F5F0] rounded-lg border overflow-hidden flex flex-col justify-between transition-all duration-300 ${step.linkUrl ? 'border-[#E2DFD8] hover:border-[#8C7A6B] hover:shadow-lg group' : 'border-[#E2DFD8] hover:shadow-md'}`}>
+                  <div>
+                    <div className="h-44 bg-[#D3CEC5] relative overflow-hidden">
+                      {step.imageUrl ? (
+                        <Image
+                          src={step.imageUrl}
+                          alt={step.title || `Fase ${idx + 1}`}
+                          fill
+                          className={`object-cover transition duration-700 ${step.linkUrl ? 'group-hover:scale-105' : 'hover:scale-105'}`}
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-[11px] text-[#8C7A6B] uppercase font-semibold bg-[#EAE7E1] px-4 text-center">
+                          Carica foto su Sanity Studio
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <span className="text-xs font-mono font-bold text-[#8C7A6B] block mb-1">
+                        {step.stepNumber}
+                      </span>
+                      <h3 className={`text-sm font-semibold mb-2 transition-colors ${step.linkUrl ? 'text-[#2B2D2F] group-hover:text-[#8C7A6B]' : 'text-[#2B2D2F]'}`}>
+                        {step.title} {step.linkUrl && <span className="inline-block ml-1 opacity-0 group-hover:opacity-100 transition-opacity">&rarr;</span>}
+                      </h3>
+                      <p className="text-xs text-[#6B6862] leading-relaxed">{step.description}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+
+              // Se c'è un link in Sanity, avvolgi la card in un tag <Link>
+              return step.linkUrl ? (
+                <Link href={step.linkUrl} key={idx} className="block h-full">
+                  {CardContent}
+                </Link>
+              ) : (
+                <div key={idx} className="block h-full">
+                  {CardContent}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Catalogo Materiali */}
+      {/* ... IL RESTO DELLA PAGINA RIMANE UGUALE ... */}
+      <section id="materials" className="py-20 bg-[#F7F5F0]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-light text-[#2B2D2F]">Catalogo Selezionato</h2>
+              <p className="text-[#6B6862] text-xs mt-1">Materiali naturali verificati e certificati</p>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#2B2D2F] text-white py-3 rounded-md text-sm font-medium hover:bg-[#3D3F42] transition disabled:opacity-50"
-          >
-            {loading ? "Invio in corso..." : "Invia Richiesta Quotazione"}
-          </button>
-        </form>
+          <div className="grid md:grid-cols-2 gap-8">
+            {materials.map((mat) => (
+              <div key={mat._id} className="bg-white rounded-lg border border-[#E2DFD8] overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                  <div className="h-64 bg-[#D3CEC5] relative overflow-hidden">
+                    {mat.galleryUrls && mat.galleryUrls[0] ? (
+                      <Image
+                        src={mat.galleryUrls[0]}
+                        alt={mat.title}
+                        fill
+                        className="object-cover hover:scale-105 transition duration-500"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-[#8C7A6B] uppercase font-semibold">
+                        Campione Visivo In Arrivo
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <span className="text-[10px] font-bold text-[#8C7A6B] uppercase tracking-widest block mb-1">
+                      Origine: {mat.origin || "Balkans"}
+                    </span>
+                    <h3 className="text-2xl font-light text-[#2B2D2F] mb-3">{mat.title}</h3>
+                    <p className="text-xs text-[#6B6862] leading-relaxed">
+                      {mat.shortDescription || "Informazioni e specifiche tecniche disponibili su richiesta."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="px-6 pb-6 pt-2 border-t border-[#F7F5F0] flex justify-between items-center">
+                  {mat.slug?.current ? (
+                    <Link
+                      href={`/materials/${mat.slug.current}`}
+                      className="text-xs font-semibold text-[#2B2D2F] hover:text-[#8C7A6B] uppercase tracking-wider transition"
+                    >
+                      Scheda Tecnica &rarr;
+                    </Link>
+                  ) : (
+                    <Link href="/request-a-quote" className="text-xs font-semibold text-[#2B2D2F] uppercase">
+                      Richiedi RFQ &rarr;
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
+
+      {/* Form RFQ Section */}
+      <div className="bg-white border-t border-[#E2DFD8]">
+        <RfqForm materials={materials} />
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-[#E2DFD8] bg-[#EAE7E1] py-8 text-center text-xs text-[#6B6862]">
