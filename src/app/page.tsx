@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { client } from "@/sanity/schemaTypes/client";
-import Navbar from "@/components/Navbar";
+import LanguageSelector from "@/components/LanguageSelector";
 import OpenRfqButton from "@/components/OpenRfqButton";
 import { translations, Locale } from "@/lib/translations";
 
@@ -44,13 +44,67 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-[#FAF9F6] text-[#2B2D2F] font-sans selection:bg-[#8C7A6B] selection:text-white flex flex-col justify-between overflow-x-hidden">
       
-      {/* NAVBAR UNIFICATA RESPONSIVE */}
-      <Navbar t={t} />
+      {/* TOP UTILITY BAR ISTITUZIONALE */}
+      <div className="bg-[#141516] text-[#A3A09A] text-[9px] sm:text-[10px] font-mono border-b border-white/10 py-2.5 px-4 sm:px-6 relative z-50">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] flex-shrink-0"></span>
+            <span className="text-[#E2DFD8] tracking-wider uppercase font-semibold truncate">
+              {t.topBar.quarry}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-4 text-white flex-shrink-0">
+            <a href="mailto:info@mineralb.com" className="hover:text-[#C5A880] transition hidden md:inline">
+              info@mineralb.com
+            </a>
+            <span className="text-white/20 hidden md:inline">•</span>
+            <span className="text-[#C5A880] font-semibold tracking-wider hidden sm:inline">
+              {t.topBar.location}
+            </span>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <LanguageSelector />
+          </div>
+        </div>
+      </div>
 
-      {/* 2. HERO PRINCIPALE ULTRA-RESPONSIVE */}
+      {/* HEADER EDITORIALE */}
+      <header className="sticky top-0 z-40 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#EAE7E1] shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center">
+          
+          {/* Logo aziendale compatto */}
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" title="MinerAlb Home">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#141516] text-[#C5A880] flex items-center justify-center font-serif text-sm sm:text-base font-semibold rounded-[2px] shadow-sm border border-white/10 flex-shrink-0">
+              M
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-base sm:text-lg font-light tracking-[0.2em] sm:tracking-[0.22em] text-[#141516] uppercase leading-none">
+                MINER<span className="font-semibold text-[#8C7A6B]">ALB</span>
+              </span>
+              <span className="text-[7px] sm:text-[8px] font-mono tracking-[0.25em] text-[#8C7A6B] uppercase mt-1 leading-none font-semibold">
+                Natural Stone
+              </span>
+            </div>
+          </Link>
+
+          {/* Navigazione Desktop: About Us -> The Method -> Materials */}
+          <nav className="hidden md:flex space-x-8 lg:space-x-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6B6862]">
+            <Link href="/about" className="hover:text-[#1A1A1A] transition">{t.nav.about}</Link>
+            <Link href="/metodo" className="hover:text-[#1A1A1A] transition">{t.nav.method}</Link>
+            <Link href="/materials/golden-breccia" className="hover:text-[#1A1A1A] transition">{t.nav.materials}</Link>
+          </nav>
+
+          {/* PULSANTE HEADER: apre il pop-up senza ricaricare */}
+          <OpenRfqButton className="border border-[#141516] bg-[#141516] text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.16em] hover:bg-[#8C7A6B] transition flex items-center gap-1.5 shadow-sm">
+            <span>{t.nav.requestQuote}</span>
+            <span className="text-xs">&#8599;</span>
+          </OpenRfqButton>
+        </div>
+      </header>
+
+      {/* 2. HERO PRINCIPALE */}
       <main className="relative flex-grow flex items-center overflow-hidden">
         
-        {/* SFONDO SOLO SU DESKTOP (lg) */}
+        {/* Sfondo Desktop */}
         <div className="hidden lg:block absolute inset-0 z-0">
           <Image
             src={heroImageSrc}
@@ -65,7 +119,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-6 w-full py-10 sm:py-16 md:py-20 relative z-10">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             
-            {/* COLONNA TESTO */}
+            {/* Colonna Testo */}
             <div className="lg:col-span-6 space-y-5 sm:space-y-6 max-w-xl">
               <span className="inline-block text-[9px] sm:text-[10px] font-mono font-bold text-[#8C7A6B] uppercase tracking-[0.25em]">
                 {t.home.tag}
@@ -89,13 +143,14 @@ export default async function Home() {
                   <span className="text-xs">&#8599;</span>
                 </Link>
 
+                {/* PULSANTE HERO: apre il pop-up */}
                 <OpenRfqButton className="border border-[#141516]/30 bg-white/80 backdrop-blur-xs text-[#2B2D2F] px-6 sm:px-8 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.15em] hover:border-[#8C7A6B] hover:text-[#8C7A6B] transition shadow-xs">
                   {t.home.rfqBtn}
                 </OpenRfqButton>
               </div>
             </div>
 
-            {/* IMMAGINE NITIDA IN PRIMO PIANO SU MOBILE CON PLACCA ANCORATA */}
+            {/* Immagine con Placca */}
             <div className="lg:col-span-6 pt-2 lg:pt-0">
               <Link
                 href="/materials/golden-breccia"
@@ -111,7 +166,6 @@ export default async function Home() {
 
                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                {/* Placca Nera ad alto contrasto adagiata sulla foto */}
                 <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 bg-[#141516]/95 backdrop-blur-md border border-white/20 text-white p-4 sm:p-6 rounded-sm shadow-2xl transition-all duration-300 max-w-[260px] sm:max-w-xs z-10">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]"></span>
@@ -154,6 +208,7 @@ export default async function Home() {
             {t.home.ctaDesc}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            {/* PULSANTE CTA FINALE: apre il pop-up */}
             <OpenRfqButton className="w-full sm:w-auto bg-[#C5A880] text-[#141516] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] hover:bg-[#d8be9a] transition flex items-center justify-center gap-2 shadow-lg">
               <span>{t.home.ctaRfqBtn}</span>
               <span>&#8599;</span>
