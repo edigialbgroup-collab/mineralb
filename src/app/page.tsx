@@ -1,301 +1,223 @@
 import Link from "next/link";
 import Image from "next/image";
+import { cookies } from "next/headers";
 import { client } from "@/sanity/schemaTypes/client";
-import RfqForm from "@/components/RfqForm";
-
-interface Material {
-  _id: string;
-  title: string;
-  slug?: { current: string };
-  origin?: string;
-  shortDescription?: string;
-  galleryUrls?: string[];
-}
-
-interface ProcessStep {
-  stepNumber?: string;
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  linkUrl?: string; // Nuovo campo
-}
+import LanguageSelector from "@/components/LanguageSelector";
+import OpenRfqButton from "@/components/OpenRfqButton";
+import { translations, Locale } from "@/lib/translations";
 
 interface SiteSettings {
   heroImageUrl?: string;
+  showcaseImageUrl?: string;
   heroTitle?: string;
   heroSubtitle?: string;
-  processSteps?: ProcessStep[];
 }
 
-const DEFAULT_STEPS: ProcessStep[] = [
-  {
-    stepNumber: "01. SOURCING",
-    title: "Selezione alla Cava",
-    description: "Identificazione diretta dei blocchi e delle bancate di materiale con resa estetica e strutturale superiore.",
-  },
-  {
-    stepNumber: "02. VERIFICA",
-    title: "Test di Laboratorio",
-    description: "Analisi meccaniche e fisiche certificate ASTM/EN su densità, assorbimento e resistenza alla compressione.",
-  },
-  {
-    stepNumber: "03. QUOTAZIONE",
-    title: "Offerta Dedicata",
-    description: "Elaborazione di quotazioni B2B trasparenti calibrate su quantità, specifiche di taglio e destinazione.",
-  },
-  {
-    stepNumber: "04. FORNITURA",
-    title: "Logistica e Spedizione",
-    description: "Coordinamento delle spedizioni internazionali per blocchi grezzi, lastre o progetti cut-to-size.",
-  },
-];
-
-async function getHomePageData(): Promise<{ materials: Material[]; settings: SiteSettings | null }> {
+async function getHomePageData(): Promise<{ settings: SiteSettings | null }> {
   const query = `{
-    "materials": *[_type == "material"] | order(publishedAt desc) {
-      _id,
-      title,
-      slug,
-      origin,
-      shortDescription,
-      "galleryUrls": gallery[].asset->url
-    },
     "settings": *[_type == "siteSettings"][0] {
       "heroImageUrl": heroImage.asset->url,
+      "showcaseImageUrl": showcaseImage.asset->url,
       heroTitle,
-      heroSubtitle,
-      processSteps[] {
-        stepNumber,
-        title,
-        description,
-        "imageUrl": image.asset->url,
-        linkUrl
-      }
+      heroSubtitle
     }
   }`;
 
   try {
     const data = await client.fetch(query);
-    return {
-      materials: data?.materials || [],
-      settings: data?.settings || null,
-    };
+    return { settings: data?.settings || null };
   } catch (error) {
     console.error("Errore recupero dati Home Page:", error);
-    return { materials: [], settings: null };
+    return { settings: null };
   }
 }
 
 export default async function Home() {
-  const { materials, settings } = await getHomePageData();
+  const { settings } = await getHomePageData();
 
-  const heroImageSrc = settings?.heroImageUrl;
-  const heroTitle = settings?.heroTitle || "Pietre Naturali,\nDirettamente dalla Fonte.";
-  const heroSubtitle = settings?.heroSubtitle || "Connettiamo cave verificate con acquirenti B2B e distributori internazionali. Trasparenza tecnica, certificazioni e supporto alla fornitura.";
+  const cookieStore = await cookies();
+  const currentLang = (cookieStore.get("mineralb_lang")?.value as Locale) || "it";
+  const t = translations[currentLang] || translations.it;
 
-  const processSteps = DEFAULT_STEPS.map((defaultStep, idx) => {
-    const sanityStep = settings?.processSteps?.[idx];
-    return {
-      stepNumber: sanityStep?.stepNumber || defaultStep.stepNumber,
-      title: sanityStep?.title || defaultStep.title,
-      description: sanityStep?.description || defaultStep.description,
-      imageUrl: sanityStep?.imageUrl,
-      linkUrl: sanityStep?.linkUrl, // Recupero Link
-    };
-  });
+  const heroImageSrc = settings?.heroImageUrl || "/hero-block.png";
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#1A1A1A] font-sans selection:bg-[#8C7A6B] selection:text-white">
-         {/* Header - Menu Aggiornato Home Page (Testo Chiaro su Sfondo Scuro) */}
-      <header className="fixed w-full border-b border-white/10 bg-[#141516]/90 backdrop-blur-md z-50 transition-all">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B2D2F] font-sans selection:bg-[#8C7A6B] selection:text-white flex flex-col justify-between">
+      
+      {/* TOP UTILITY BAR ISTITUZIONALE */}
+      <div className="bg-[#141516] text-[#A3A09A] text-[10px] font-mono border-b border-white/10 py-2.5 px-6 relative z-50">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]"></span>
+            <span className="text-[#E2DFD8] tracking-wider uppercase font-semibold">{t.topBar.quarry}</span>
+            <span className="text-white/20">•</span>
+            <span className="hidden md:inline uppercase text-[#8C7A6B]">{t.topBar.b2b}</span>
+          </div>
+          <div className="flex items-center gap-4 text-white">
+            <a href="mailto:info@mineralb.com" className="hover:text-[#C5A880] transition">info@mineralb.com</a>
+            <span className="text-white/20">•</span>
+            <span className="text-[#C5A880] font-semibold tracking-wider">{t.topBar.location}</span>
+            <span className="text-white/20">•</span>
+            <LanguageSelector />
+          </div>
+        </div>
+      </div>
+
+      {/* HEADER EDITORIALE (ORDINE: ABOUT US -> THE METHOD -> MATERIALS) */}
+      <header className="sticky top-0 z-40 bg-[#FAF9F6]/90 backdrop-blur-md border-b border-[#EAE7E1] shadow-xs">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-white">
-            MINERAL<span className="text-[#C5A880]">B</span>
+          
+          <Link href="/" className="flex items-center gap-3 group" title="MinerAlb Home">
+            <div className="w-8 h-8 bg-[#141516] text-[#C5A880] flex items-center justify-center font-serif text-base font-semibold rounded-[2px] shadow-sm group-hover:bg-[#8C7A6B] group-hover:text-white transition-colors duration-300 border border-white/10 flex-shrink-0">
+              M
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-lg font-light tracking-[0.22em] text-[#141516] uppercase leading-none">
+                MINER<span className="font-semibold text-[#8C7A6B]">ALB</span>
+              </span>
+              <span className="text-[8px] font-mono tracking-[0.3em] text-[#8C7A6B] uppercase mt-1 leading-none font-semibold">
+                Natural Stone
+              </span>
+            </div>
           </Link>
-          <nav className="hidden md:flex space-x-8 text-xs font-semibold uppercase tracking-wider text-[#A3A09A]">
-            <Link href="/about" className="hover:text-white transition">Chi Siamo</Link>
-            <Link href="/#process" className="hover:text-white transition">Il Metodo</Link>
-            <Link href="/#materials" className="hover:text-white transition">Materiali</Link>
-            <Link href="/request-a-quote" className="hover:text-white transition text-white border-b border-[#C5A880] pb-1">Richiedi Quotazione</Link>
+
+          <nav className="hidden md:flex space-x-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6B6862]">
+            <Link href="/about" className="hover:text-[#1A1A1A] transition">{t.nav.about}</Link>
+            <Link href="/metodo" className="hover:text-[#1A1A1A] transition">{t.nav.method}</Link>
+            <Link href="/materials/golden-breccia" className="hover:text-[#1A1A1A] transition">{t.nav.materials}</Link>
           </nav>
+
+          {/* PULSANTE CHE APRE IL POP-UP SENZA NAVIGAZIONE */}
+          <OpenRfqButton className="border border-[#141516] bg-[#141516] text-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] hover:bg-transparent hover:text-[#141516] transition flex items-center gap-1.5 shadow-sm">
+            <span>{t.nav.requestQuote}</span>
+            <span className="text-xs">&#8599;</span>
+          </OpenRfqButton>
         </div>
       </header>
 
+      {/* 2. HERO IMMERSIVA */}
+      <main className="relative min-h-[calc(100vh-105px)] flex items-center overflow-hidden">
+        
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={heroImageSrc}
+            alt="Golden Breccia Monolithic Stone"
+            fill
+            priority
+            className="object-cover object-center lg:object-right"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FAF9F6] via-[#FAF9F6]/85 to-transparent lg:bg-gradient-to-r lg:from-[#FAF9F6] lg:via-[#FAF9F6]/75 lg:to-transparent lg:w-[62%]" />
+        </div>
 
-      {/* Hero Section */}
-      <section className="relative pt-36 pb-28 md:pt-48 md:pb-36 px-6 bg-[#141516] text-white overflow-hidden min-h-[85vh] flex items-center justify-center">
-        {heroImageSrc ? (
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={heroImageSrc}
-              alt="Pietra naturale MineralB"
-              fill
-              priority
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
+        <div className="max-w-7xl mx-auto px-6 w-full py-16 md:py-24 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-10 items-center min-h-[65vh]">
+            
+            {/* Colonna Testo */}
+            <div className="lg:col-span-6 space-y-8 max-w-xl">
+              <span className="inline-block text-[10px] font-mono font-bold text-[#8C7A6B] uppercase tracking-[0.25em]">
+                {t.home.tag}
+              </span>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-[#1A1A1A] leading-[1.12]">
+                {t.home.titleStart} <br />
+                <span className="italic font-serif text-[#8C7A6B]">{t.home.titleItalic}</span>
+              </h1>
+              
+              <p className="text-base text-[#4A4A4A] font-light leading-relaxed">
+                {t.home.description}
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                {/* EXPLORE MATERIALS PORTA ALLA SCHEDA DIRETTA DEL MATERIALE */}
+                <Link
+                  href="/materials/golden-breccia"
+                  className="bg-[#141516] text-white px-8 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.15em] hover:bg-[#8C7A6B] transition shadow-xl flex items-center justify-center gap-2"
+                >
+                  <span>{t.home.exploreBtn}</span>
+                  <span className="text-xs">&#8599;</span>
+                </Link>
+
+                {/* SUBMIT PROJECT APRE IL POP-UP SUBITO */}
+                <OpenRfqButton className="border border-[#141516]/40 bg-white/70 backdrop-blur-xs text-[#2B2D2F] px-8 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.15em] hover:border-[#8C7A6B] hover:text-[#8C7A6B] transition shadow-sm">
+                  {t.home.rfqBtn}
+                </OpenRfqButton>
+              </div>
+            </div>
+
+            {/* Placca Fluttuante */}
+            <div className="lg:col-span-6 flex justify-start lg:justify-end items-end self-end pt-12 lg:pt-0">
+              <Link
+                href="/materials/golden-breccia"
+                className="group block bg-[#141516] border border-white/20 text-white px-7 py-6 rounded-sm shadow-2xl transition-all duration-300 hover:border-[#C5A880] hover:-translate-y-1 max-w-[300px] w-full"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] animate-pulse"></span>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-[#C5A880]">
+                    {t.home.cardBadge}
+                  </span>
+                </div>
+
+                <div className="leading-tight">
+                  <span className="text-[10px] font-mono font-medium tracking-[0.2em] text-[#A3A09A] uppercase block mb-1">
+                    {t.home.cardFamily}
+                  </span>
+                  <div className="text-3xl font-light tracking-tight text-white">
+                    Golden <span className="font-serif italic font-normal text-[#E8DCC4] tracking-normal">Breccia</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C5A880] group-hover:text-white transition-colors">
+                  <span>{t.home.cardCta}</span>
+                  <span className="text-base group-hover:translate-x-1.5 transition-transform duration-300">&#8599;</span>
+                </div>
+              </Link>
+            </div>
+
           </div>
-        ) : (
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#111213] to-[#1C1E20]"></div>
-        )}
+        </div>
+      </main>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10 drop-shadow-sm">
-          <span className="inline-block px-3.5 py-1 bg-black/50 border border-[#C5A880]/50 rounded-full text-[11px] font-semibold text-[#C5A880] uppercase tracking-[0.2em] mb-6 backdrop-blur">
-            B2B Natural Stone Sourcing
+      {/* 3. SEZIONE FINALE: HAI UN PROGETTO? */}
+      <section className="py-20 bg-[#141516] text-white border-t border-[#2B2D2F]">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <span className="text-[10px] font-mono font-bold text-[#C5A880] uppercase tracking-[0.25em] block mb-4">
+            {t.home.ctaTag}
           </span>
-          
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-white leading-[1.15] mb-6 whitespace-pre-line">
-            {heroTitle}
-          </h1>
-          
-          <p className="text-base md:text-xl text-[#E2DFD8] max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            {heroSubtitle}
+          <h2 className="text-3xl md:text-5xl font-light tracking-tight mb-6">
+            {t.home.ctaTitle}
+          </h2>
+          <p className="text-sm md:text-base text-[#A3A09A] font-light max-w-xl mx-auto mb-10 leading-relaxed">
+            {t.home.ctaDesc}
           </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* APRE IL POP-UP DIRETTAMENTE */}
+            <OpenRfqButton className="w-full sm:w-auto bg-[#C5A880] text-[#141516] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] hover:bg-[#d8be9a] transition flex items-center justify-center gap-2 shadow-lg">
+              <span>{t.home.ctaRfqBtn}</span>
+              <span>&#8599;</span>
+            </OpenRfqButton>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-            <a
-              href="#materials"
-              className="w-full sm:w-auto bg-[#C5A880] text-[#141516] px-8 py-3.5 rounded text-xs font-semibold uppercase tracking-wider hover:bg-[#d6ba93] transition shadow-lg"
-            >
-              Esplora Catalogo
-            </a>
             <Link
-              href="/request-a-quote" // ANCHE QUI AGGIORNATO
-              className="w-full sm:w-auto border border-white/40 bg-black/30 text-white px-8 py-3.5 rounded text-xs font-semibold uppercase tracking-wider hover:bg-white/20 transition backdrop-blur"
+              href="/materials/golden-breccia"
+              className="w-full sm:w-auto border border-white/20 bg-transparent text-white px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] hover:bg-white/10 transition"
             >
-              Richiedi Quotazione
+              {t.home.ctaTechBtn}
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Il Metodo - Ora Dinamicamente Cliccabile */}
-      <section id="process" className="py-20 bg-white border-b border-[#E2DFD8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-light text-[#2B2D2F]">Trasparenza dalla Cava al Cantiere</h2>
-            <p className="text-[#6B6862] text-xs uppercase tracking-wider mt-2">
-              Il nostro processo di selezione e fornitura B2B
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {processSteps.map((step, idx) => {
-              // Contenuto interno della card
-              const CardContent = (
-                <div className={`h-full bg-[#F7F5F0] rounded-lg border overflow-hidden flex flex-col justify-between transition-all duration-300 ${step.linkUrl ? 'border-[#E2DFD8] hover:border-[#8C7A6B] hover:shadow-lg group' : 'border-[#E2DFD8] hover:shadow-md'}`}>
-                  <div>
-                    <div className="h-44 bg-[#D3CEC5] relative overflow-hidden">
-                      {step.imageUrl ? (
-                        <Image
-                          src={step.imageUrl}
-                          alt={step.title || `Fase ${idx + 1}`}
-                          fill
-                          className={`object-cover transition duration-700 ${step.linkUrl ? 'group-hover:scale-105' : 'hover:scale-105'}`}
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-[11px] text-[#8C7A6B] uppercase font-semibold bg-[#EAE7E1] px-4 text-center">
-                          Carica foto su Sanity Studio
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <span className="text-xs font-mono font-bold text-[#8C7A6B] block mb-1">
-                        {step.stepNumber}
-                      </span>
-                      <h3 className={`text-sm font-semibold mb-2 transition-colors ${step.linkUrl ? 'text-[#2B2D2F] group-hover:text-[#8C7A6B]' : 'text-[#2B2D2F]'}`}>
-                        {step.title} {step.linkUrl && <span className="inline-block ml-1 opacity-0 group-hover:opacity-100 transition-opacity">&rarr;</span>}
-                      </h3>
-                      <p className="text-xs text-[#6B6862] leading-relaxed">{step.description}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-
-              // Se c'è un link in Sanity, avvolgi la card in un tag <Link>
-              return step.linkUrl ? (
-                <Link href={step.linkUrl} key={idx} className="block h-full">
-                  {CardContent}
-                </Link>
-              ) : (
-                <div key={idx} className="block h-full">
-                  {CardContent}
-                </div>
-              );
-            })}
+      {/* 4. FOOTER */}
+      <footer className="bg-[#FAF9F6] border-t border-[#EAE7E1] py-8 text-center text-xs text-[#6B6862]">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p>{t.home.footerCopy}</p>
+          <div className="flex space-x-6 text-[11px] font-medium">
+            <Link href="/privacy" className="hover:text-[#1A1A1A]">{t.home.privacy}</Link>
+            <Link href="/cookie-policy" className="hover:text-[#1A1A1A]">{t.home.cookie}</Link>
+            <Link href="/about" className="hover:text-[#1A1A1A]">{t.nav.about}</Link>
           </div>
         </div>
-      </section>
-
-      {/* Catalogo Materiali */}
-      {/* ... IL RESTO DELLA PAGINA RIMANE UGUALE ... */}
-      <section id="materials" className="py-20 bg-[#F7F5F0]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-end mb-10">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-light text-[#2B2D2F]">Catalogo Selezionato</h2>
-              <p className="text-[#6B6862] text-xs mt-1">Materiali naturali verificati e certificati</p>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {materials.map((mat) => (
-              <div key={mat._id} className="bg-white rounded-lg border border-[#E2DFD8] overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                  <div className="h-64 bg-[#D3CEC5] relative overflow-hidden">
-                    {mat.galleryUrls && mat.galleryUrls[0] ? (
-                      <Image
-                        src={mat.galleryUrls[0]}
-                        alt={mat.title}
-                        fill
-                        className="object-cover hover:scale-105 transition duration-500"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-[#8C7A6B] uppercase font-semibold">
-                        Campione Visivo In Arrivo
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <span className="text-[10px] font-bold text-[#8C7A6B] uppercase tracking-widest block mb-1">
-                      Origine: {mat.origin || "Balkans"}
-                    </span>
-                    <h3 className="text-2xl font-light text-[#2B2D2F] mb-3">{mat.title}</h3>
-                    <p className="text-xs text-[#6B6862] leading-relaxed">
-                      {mat.shortDescription || "Informazioni e specifiche tecniche disponibili su richiesta."}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-6 pb-6 pt-2 border-t border-[#F7F5F0] flex justify-between items-center">
-                  {mat.slug?.current ? (
-                    <Link
-                      href={`/materials/${mat.slug.current}`}
-                      className="text-xs font-semibold text-[#2B2D2F] hover:text-[#8C7A6B] uppercase tracking-wider transition"
-                    >
-                      Scheda Tecnica &rarr;
-                    </Link>
-                  ) : (
-                    <Link href="/request-a-quote" className="text-xs font-semibold text-[#2B2D2F] uppercase">
-                      Richiedi RFQ &rarr;
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Form RFQ Section */}
-      <div className="bg-white border-t border-[#E2DFD8]">
-        <RfqForm materials={materials} />
-      </div>
-
-      {/* Footer */}
-      <footer className="border-t border-[#E2DFD8] bg-[#EAE7E1] py-8 text-center text-xs text-[#6B6862]">
-        &copy; 2026 MineralB - Natural Stone & Mineral Sourcing Platform. Tutti i diritti riservati.
       </footer>
+
     </div>
   );
 }

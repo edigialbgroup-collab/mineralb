@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -46,10 +46,15 @@ interface RfqFormProps {
 }
 
 export default function RfqForm({ materials, selectedProduct }: RfqFormProps) {
+  const [mounted, setMounted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const defaultProduct = selectedProduct || materials[0]?.title || "Golden Breccia";
 
@@ -132,6 +137,23 @@ export default function RfqForm({ materials, selectedProduct }: RfqFormProps) {
       setStatusMessage({ type: "error", text: "Errore di connessione. Riprova più tardi." });
     }
   };
+
+  // Segnaposto fino al montaggio client per azzerare le discrepanze HTML con le estensioni browser
+  if (!mounted) {
+    return (
+      <section id="rfq" className="max-w-4xl mx-auto px-6 py-20">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-light text-[#2B2D2F]">Richiesta di Quotazione B2B (RFQ)</h2>
+          <p className="text-sm text-[#6B6862] mt-2">
+            Compila il modulo per ricevere un'offerta commerciale personalizzata per il tuo progetto.
+          </p>
+        </div>
+        <div className="h-96 flex items-center justify-center bg-white border border-[#E2DFD8] rounded-lg shadow-sm text-xs font-mono text-[#8C7A6B]">
+          Inizializzazione modulo protetto...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="rfq" className="max-w-4xl mx-auto px-6 py-20">
@@ -321,7 +343,7 @@ export default function RfqForm({ materials, selectedProduct }: RfqFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-[#2B2D2F] text-white py-3 rounded-md text-sm font-medium hover:bg-[#3D3F42] transition disabled:opacity-50"
+          className="w-full bg-[#2B2D2F] text-white py-3 rounded-md text-sm font-medium hover:bg-[#3D3F42] transition disabled:opacity-50 cursor-pointer"
         >
           {isSubmitting ? "Invio in corso..." : "Invia Richiesta Quotazione"}
         </button>

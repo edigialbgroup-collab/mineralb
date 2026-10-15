@@ -26,6 +26,15 @@ export default defineType({
       initialValue: 'Connettiamo cave verificate con acquirenti B2B e distributori internazionali.',
     }),
 
+    // Nuova scheda: Foto per l'applicazione di progetto (Isola Cucina / Monoliti)
+    defineField({
+      name: 'showcaseImage',
+      title: 'Foto Applicazione di Progetto (Isola Cucina)',
+      type: 'image',
+      description: 'Foto per la seconda scheda del catalogo in Home Page.',
+      options: { hotspot: true },
+    }),
+
     // Sezione per le 4 Fasi del Metodo
     defineField({
       name: 'processSteps',
@@ -60,7 +69,6 @@ export default defineType({
               type: 'image',
               options: { hotspot: true },
             }),
-            // Campo aggiunto per rendere la scheda un link
             defineField({
               name: 'linkUrl',
               title: 'Link Pagina Dedicata (Opzionale)',
