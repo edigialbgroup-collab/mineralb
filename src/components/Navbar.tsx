@@ -8,7 +8,7 @@ import OpenRfqButton from "@/components/OpenRfqButton";
 interface NavbarProps {
   t: {
     topBar: { quarry: string; b2b: string; location: string };
-    nav: { about: string; method: string; materials: string; requestQuote: string };
+    nav: { home: string; about: string; method: string; materials: string; requestQuote: string };
   };
 }
 
@@ -17,8 +17,8 @@ export default function Navbar({ t }: NavbarProps) {
 
   return (
     <>
-      {/* TOP BAR: compatta su mobile */}
-      <div className="bg-[#141516] text-[#A3A09A] text-[9px] sm:text-[10px] font-mono border-b border-white/10 py-2 px-4 sm:px-6 relative z-50">
+      {/* TOP UTILITY BAR ISTITUZIONALE */}
+      <div className="bg-[#141516] text-[#A3A09A] text-[9px] sm:text-[10px] font-mono border-b border-white/10 py-2.5 px-4 sm:px-6 relative z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 sm:gap-3 truncate">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] flex-shrink-0"></span>
@@ -27,6 +27,10 @@ export default function Navbar({ t }: NavbarProps) {
             </span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 text-white flex-shrink-0">
+            <a href="mailto:info@mineralb.com" className="hover:text-[#C5A880] transition hidden md:inline">
+              info@mineralb.com
+            </a>
+            <span className="text-white/20 hidden md:inline">•</span>
             <span className="text-[#C5A880] font-semibold tracking-wider hidden sm:inline">
               {t.topBar.location}
             </span>
@@ -40,7 +44,7 @@ export default function Navbar({ t }: NavbarProps) {
       <header className="sticky top-0 z-40 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#EAE7E1] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center">
           
-          {/* Logo compatto su mobile */}
+          {/* Logo aziendale */}
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" title="MinerAlb Home">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#141516] text-[#C5A880] flex items-center justify-center font-serif text-sm sm:text-base font-semibold rounded-[2px] shadow-sm border border-white/10 flex-shrink-0">
               M
@@ -55,26 +59,26 @@ export default function Navbar({ t }: NavbarProps) {
             </div>
           </Link>
 
-          {/* Navigazione Desktop */}
+          {/* Navigazione Desktop: About Us -> The Method -> Materials */}
           <nav className="hidden md:flex space-x-8 lg:space-x-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6B6862]">
             <Link href="/about" className="hover:text-[#1A1A1A] transition">{t.nav.about}</Link>
             <Link href="/metodo" className="hover:text-[#1A1A1A] transition">{t.nav.method}</Link>
             <Link href="/materials/golden-breccia" className="hover:text-[#1A1A1A] transition">{t.nav.materials}</Link>
           </nav>
 
-          {/* Azioni Destra: Tasto RFQ Desktop + Hamburger Mobile */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <OpenRfqButton className="hidden sm:flex border border-[#141516] bg-[#141516] text-white px-4 lg:px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] hover:bg-[#8C7A6B] transition items-center gap-1.5 shadow-sm">
+          {/* Azioni a destra: Pulsante RFQ Desktop + Hamburger Mobile */}
+          <div className="flex items-center gap-2.5">
+            <OpenRfqButton className="border border-[#141516] bg-[#141516] text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.16em] hover:bg-[#8C7A6B] transition flex items-center gap-1.5 shadow-sm">
               <span>{t.nav.requestQuote}</span>
               <span className="text-xs">&#8599;</span>
             </OpenRfqButton>
 
-            {/* Pulsante Hamburger per smartphone */}
+            {/* Icona Menu Hamburger visibile solo su smartphone */}
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden w-9 h-9 flex items-center justify-center text-[#141516] border border-[#EAE7E1] rounded-sm bg-white"
-              aria-label="Menu"
+              className="md:hidden w-9 h-9 flex items-center justify-center text-[#141516] border border-[#EAE7E1] rounded-sm bg-white cursor-pointer shadow-xs"
+              aria-label="Menu di navigazione"
             >
               {menuOpen ? (
                 <span className="text-base font-mono leading-none">✕</span>
@@ -87,17 +91,25 @@ export default function Navbar({ t }: NavbarProps) {
           </div>
         </div>
 
-        {/* Menu a tendina su Smartphone */}
+        {/* TENDINA MENU MOBILE SU SMARTPHONE */}
         {menuOpen && (
-          <div className="md:hidden bg-[#FAF9F6] border-b border-[#EAE7E1] px-6 py-6 space-y-4 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col space-y-3 font-semibold uppercase tracking-widest text-xs text-[#2B2D2F]">
+          <div className="md:hidden bg-[#FAF9F6] border-b border-[#EAE7E1] px-6 py-5 space-y-3 shadow-xl">
+            <div className="flex flex-col space-y-2 font-semibold uppercase tracking-widest text-xs text-[#2B2D2F]">
+              <Link
+                href="/"
+                onClick={() => setMenuOpen(false)}
+                className="py-2.5 border-b border-[#EAE7E1] flex justify-between items-center"
+              >
+                <span>{t.nav.home}</span>
+                <span className="text-[#8C7A6B]">&rarr;</span>
+              </Link>
               <Link
                 href="/about"
                 onClick={() => setMenuOpen(false)}
                 className="py-2.5 border-b border-[#EAE7E1] flex justify-between items-center"
               >
                 <span>{t.nav.about}</span>
-                <span className="text-xs text-[#8C7A6B]">&rarr;</span>
+                <span className="text-[#8C7A6B]">&rarr;</span>
               </Link>
               <Link
                 href="/metodo"
@@ -105,7 +117,7 @@ export default function Navbar({ t }: NavbarProps) {
                 className="py-2.5 border-b border-[#EAE7E1] flex justify-between items-center"
               >
                 <span>{t.nav.method}</span>
-                <span className="text-xs text-[#8C7A6B]">&rarr;</span>
+                <span className="text-[#8C7A6B]">&rarr;</span>
               </Link>
               <Link
                 href="/materials/golden-breccia"
@@ -113,14 +125,8 @@ export default function Navbar({ t }: NavbarProps) {
                 className="py-2.5 border-b border-[#EAE7E1] flex justify-between items-center"
               >
                 <span>{t.nav.materials}</span>
-                <span className="text-xs text-[#8C7A6B]">&rarr;</span>
+                <span className="text-[#8C7A6B]">&rarr;</span>
               </Link>
-            </div>
-
-            <div className="pt-2">
-              <OpenRfqButton className="w-full bg-[#141516] text-white py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-center shadow-md">
-                {t.nav.requestQuote} &#8599;
-              </OpenRfqButton>
             </div>
           </div>
         )}

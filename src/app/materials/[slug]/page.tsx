@@ -95,12 +95,12 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
     : [];
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-[#2B2D2F] font-sans selection:bg-[#8C7A6B] selection:text-white flex flex-col justify-between overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2B2D2F] font-sans selection:bg-[#8C7A6B] selection:text-white flex flex-col justify-between overflow-x-hidden w-full max-w-full">
       
-      {/* NAVBAR RESPONSIVE UNIFICATA CON MENU MOBILE */}
+      {/* NAVBAR UNIVERSALE RESPONSIVE */}
       <Navbar t={t} />
 
-      {/* SOTTO-BARRA DI NAVIGAZIONE INTERNA SCHEDA (Visibile solo da Desktop) */}
+      {/* SOTTO-BARRA DI NAVIGAZIONE INTERNA SCHEDA (SOLO DESKTOP) */}
       <div className="hidden lg:block bg-white/80 backdrop-blur-md border-b border-[#EAE7E1] py-2 px-6 sticky top-[65px] z-30">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-[#6B6862]">
           <div className="flex items-center gap-6">
@@ -108,7 +108,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
             <span>•</span>
             <a href="#overview" className="hover:text-[#141516] transition">{t.nav.overview}</a>
             <a href="#variants" className="hover:text-[#141516] transition">{t.nav.variants}</a>
-            <a href="#finishes" className="hover:text-[#141516] transition">{t.nav.finishes}</a>
+            <a href="#finishes" className="hover:text-[#1A1A1A] transition">{t.nav.finishes}</a>
           </div>
           <OpenRfqButton
             product={material.title}
@@ -120,21 +120,18 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      {/* 01. SCHERMATA MONOGRAFICA RESPONSIVE */}
+      {/* 01. SCHERMATA MONOGRAFICA */}
       <section
         id="overview"
-        className="relative flex-grow flex flex-col justify-between pt-6 sm:pt-12 pb-12 px-5 sm:px-6 max-w-7xl mx-auto w-full"
+        className="relative flex-grow flex flex-col justify-between pt-6 sm:pt-12 pb-12 px-4 sm:px-6 max-w-7xl mx-auto w-full"
       >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center flex-grow">
           
-          {/* CARRELLATA FOTO (Si adatta perfettamente a schermi touch) */}
           <div className="lg:col-span-6 w-full">
             <MaterialGallery images={galleryImages} materialTitle={material.title} />
           </div>
 
-          {/* COLONNA INFORMATIVA */}
           <div className="lg:col-span-6 w-full space-y-5 sm:space-y-6">
-            
             <div>
               <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#8C7A6B] uppercase tracking-[0.25em] block mb-1.5 sm:mb-2">
                 {t.hero.tag}
@@ -147,7 +144,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </p>
             </div>
 
-            {/* METRICHE DI LABORATORIO (Ottimizzate per non sgranare su schermi da 375px) */}
+            {/* METRICHE DI LABORATORIO */}
             <div className="border-y border-[#EAE7E1] py-3 sm:py-3.5">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-[0.18em] text-[#8C7A6B]">
@@ -194,7 +191,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </div>
             </div>
 
-            {/* FORMATI DI FORNITURA: su smartphone si impilano a riga singola (cols-1), su tablet/PC a 3 colonne */}
+            {/* FORMATI DI FORNITURA */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#8C7A6B]">
@@ -206,7 +203,6 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-                {/* 01. BLOCCHI */}
                 <OpenRfqButton
                   product={material.title}
                   variant="Blocchi Grezzi da Cava"
@@ -230,7 +226,6 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                   </div>
                 </OpenRfqButton>
 
-                {/* 02. LASTRE */}
                 <OpenRfqButton
                   product={material.title}
                   variant="Lastre Selezionate"
@@ -255,7 +250,6 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                   </div>
                 </OpenRfqButton>
 
-                {/* 03. CUT-TO-SIZE */}
                 <OpenRfqButton
                   product={material.title}
                   variant="Cut-to-Size & Progetti"
@@ -282,12 +276,10 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </div>
             </div>
 
-            {/* TESTO DESCRITTIVO */}
             <p className="text-xs sm:text-sm text-[#4A4A4A] font-light leading-relaxed">
               {t.hero.description}
             </p>
 
-            {/* PULSANTI DI AZIONE */}
             <div className="pt-1 flex flex-col sm:flex-row gap-3">
               <a
                 href="#variants"
@@ -302,9 +294,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                 {t.hero.finishesBtn}
               </a>
             </div>
-
           </div>
-
         </div>
 
         {/* INDICATORE DI SCORRIMENTO */}
@@ -319,8 +309,8 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
         </div>
       </section>
 
-      {/* 02. DISCOVER THE VARIANTS */}
-      <section id="variants" className="py-16 sm:py-24 max-w-7xl mx-auto px-5 sm:px-6 border-t border-[#EAE7E1] w-full">
+      {/* 02. VARIANTI DEL MATERIALE */}
+      <section id="variants" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 border-t border-[#EAE7E1] w-full">
         <div className="max-w-2xl mb-10 sm:mb-14">
           <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#8C7A6B] uppercase tracking-[0.2em] block mb-1.5 sm:mb-2">
             {t.variantsSection.tag}
@@ -381,8 +371,8 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
         </div>
       </section>
 
-      {/* 03. FINISHES & APPLICATIONS */}
-      <section id="finishes" className="py-16 sm:py-24 max-w-7xl mx-auto px-5 sm:px-6 border-t border-[#EAE7E1] w-full">
+      {/* 03. LAVORAZIONI E FINITURE */}
+      <section id="finishes" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 border-t border-[#EAE7E1] w-full">
         <div className="max-w-3xl mb-10 sm:mb-14">
           <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#8C7A6B] uppercase tracking-[0.2em] block mb-1.5 sm:mb-2">
             {t.finishesSection.tag}

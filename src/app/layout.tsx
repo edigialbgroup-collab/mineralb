@@ -28,11 +28,10 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased overflow-x-hidden w-full max-w-full`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-[#FAF9F6] text-[#2B2D2F]">
+      <body className="min-h-full flex flex-col font-sans bg-[#FAF9F6] text-[#2B2D2F] overflow-x-hidden w-full max-w-full relative">
         {children}
-        {/* Il modale vive qui e si apre sopra qualsiasi schermata */}
         <RfqModal />
         <WhatsAppWidget />
       </body>
