@@ -17,20 +17,16 @@ export default function Navbar({ t }: NavbarProps) {
 
   return (
     <>
-      {/* TOP UTILITY BAR ISTITUZIONALE */}
-      <div className="bg-[#141516] text-[#A3A09A] text-[9px] sm:text-[10px] font-mono border-b border-white/10 py-2.5 px-4 sm:px-6 relative z-50">
+      {/* TOP UTILITY BAR: COMPATTA SU MOBILE */}
+      <div className="bg-[#141516] text-[#A3A09A] text-[9px] sm:text-[10px] font-mono border-b border-white/10 py-2 px-4 sm:px-6 relative z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 truncate">
+          <div className="flex items-center gap-2 truncate">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] flex-shrink-0"></span>
             <span className="text-[#E2DFD8] tracking-wider uppercase font-semibold truncate">
               {t.topBar.quarry}
             </span>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4 text-white flex-shrink-0">
-            <a href="mailto:info@mineralb.com" className="hover:text-[#C5A880] transition hidden md:inline">
-              info@mineralb.com
-            </a>
-            <span className="text-white/20 hidden md:inline">•</span>
+          <div className="flex items-center gap-3 text-white flex-shrink-0">
             <span className="text-[#C5A880] font-semibold tracking-wider hidden sm:inline">
               {t.topBar.location}
             </span>
@@ -40,12 +36,12 @@ export default function Navbar({ t }: NavbarProps) {
         </div>
       </div>
 
-      {/* HEADER PRINCIPALE */}
+      {/* HEADER PRINCIPALE: SEMPRE PRESENTE CON MENU HAMBURGER SU SMARTPHONE */}
       <header className="sticky top-0 z-40 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#EAE7E1] shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
           
-          {/* Logo aziendale */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" title="MinerAlb Home">
+          {/* Logo aziendale compatto */}
+          <Link href="/" className="flex items-center gap-2.5 group" title="MinerAlb Home">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#141516] text-[#C5A880] flex items-center justify-center font-serif text-sm sm:text-base font-semibold rounded-[2px] shadow-sm border border-white/10 flex-shrink-0">
               M
             </div>
@@ -66,19 +62,20 @@ export default function Navbar({ t }: NavbarProps) {
             <Link href="/materials/golden-breccia" className="hover:text-[#1A1A1A] transition">{t.nav.materials}</Link>
           </nav>
 
-          {/* Azioni a destra: Pulsante RFQ Desktop + Hamburger Mobile */}
-          <div className="flex items-center gap-2.5">
-            <OpenRfqButton className="border border-[#141516] bg-[#141516] text-white px-3.5 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.16em] hover:bg-[#8C7A6B] transition flex items-center gap-1.5 shadow-sm">
-              <span>{t.nav.requestQuote}</span>
+          {/* Azioni Destra: Tasto RFQ compatto + Tasto Menu Hamburger sempre visibile */}
+          <div className="flex items-center gap-2">
+            <OpenRfqButton className="border border-[#141516] bg-[#141516] text-white px-3 sm:px-5 py-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] hover:bg-[#8C7A6B] transition flex items-center gap-1 shadow-sm">
+              <span className="hidden sm:inline">{t.nav.requestQuote}</span>
+              <span className="sm:hidden">RFQ</span>
               <span className="text-xs">&#8599;</span>
             </OpenRfqButton>
 
-            {/* Icona Menu Hamburger visibile solo su smartphone */}
+            {/* PULSANTE HAMBURGER MOBILE */}
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden w-9 h-9 flex items-center justify-center text-[#141516] border border-[#EAE7E1] rounded-sm bg-white cursor-pointer shadow-xs"
-              aria-label="Menu di navigazione"
+              className="md:hidden w-9 h-9 flex items-center justify-center text-[#141516] border border-[#EAE7E1] rounded-sm bg-white cursor-pointer shadow-xs active:bg-[#F7F5F0]"
+              aria-label="Menu"
             >
               {menuOpen ? (
                 <span className="text-base font-mono leading-none">✕</span>
@@ -91,7 +88,7 @@ export default function Navbar({ t }: NavbarProps) {
           </div>
         </div>
 
-        {/* TENDINA MENU MOBILE SU SMARTPHONE */}
+        {/* MENU A TENDINA COMPLETO SU SMARTPHONE */}
         {menuOpen && (
           <div className="md:hidden bg-[#FAF9F6] border-b border-[#EAE7E1] px-6 py-5 space-y-3 shadow-xl">
             <div className="flex flex-col space-y-2 font-semibold uppercase tracking-widest text-xs text-[#2B2D2F]">
@@ -127,6 +124,12 @@ export default function Navbar({ t }: NavbarProps) {
                 <span>{t.nav.materials}</span>
                 <span className="text-[#8C7A6B]">&rarr;</span>
               </Link>
+            </div>
+            
+            <div className="pt-2">
+              <OpenRfqButton className="w-full bg-[#141516] text-white py-3 text-xs font-semibold uppercase tracking-[0.16em] text-center shadow-md">
+                {t.nav.requestQuote} &#8599;
+              </OpenRfqButton>
             </div>
           </div>
         )}
